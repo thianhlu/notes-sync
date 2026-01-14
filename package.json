@@ -1,0 +1,20 @@
+{
+  "name": "notion-dropbox-sync",
+  "version": "1.0.0",
+  "description": "Sync Notion meeting notes to Dropbox on a schedule",
+  "type": "module",
+  "scripts": {
+    "sync": "tsx src/sync.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.14",
+    "dropbox": "^10.34.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

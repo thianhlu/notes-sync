@@ -1,0 +1,37 @@
+name: Sync Notion to Dropbox
+
+on:
+  schedule:
+    # Runs at 9am and 5pm UTC
+    # Adjust these times to match your timezone
+    # Use https://crontab.guru to help with cron syntax
+    - cron: '0 9 * * *'
+    - cron: '0 17 * * *'
+  
+  # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run sync
+        run: npm run sync
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+          DROPBOX_FOLDER: ${{ vars.DROPBOX_FOLDER || '/Meeting Notes' }}
