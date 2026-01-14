@@ -21,17 +21,31 @@ export async function uploadFile(
 }
 
 export async function ensureFolderExists(folderPath: string): Promise<void> {
-  try {
-    await dbx.filesCreateFolderV2({
-      path: folderPath,
-      autorename: false,
-    });
-    console.log(`Created folder: ${folderPath}`);
-  } catch (error: any) {
-    // Ignore if folder already exists
-    if (error?.error?.error_summary?.includes("path/conflict/folder")) {
-      return;
+  // Create parent folders if needed
+  const parts = folderPath.split("/").filter(Boolean);
+  let currentPath = "";
+  
+  for (const part of parts) {
+    currentPath = currentPath ? `${currentPath}/${part}` : `/${part}`;
+    try {
+      await dbx.filesCreateFolderV2({
+        path: currentPath,
+        autorename: false,
+      });
+      console.log(`Created folder: ${currentPath}`);
+    } catch (error: any) {
+      // Ignore if folder already exists
+      if (error?.error?.error_summary?.includes("path/conflict/folder")) {
+        continue;
+      }
+      // If it's a different error and we're not at the final path, throw it
+      if (currentPath !== folderPath) {
+        throw error;
+      }
+      // For the final path, ignore "already exists" errors
+      if (!error?.error?.error_summary?.includes("path/conflict/folder")) {
+        throw error;
+      }
     }
-    throw error;
   }
 }
