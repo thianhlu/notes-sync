@@ -1,4 +1,4 @@
-import { getDatabasePages, getPageBlocks, getPageTitle, getPageDate } from "./notion.js";
+import { getDatabasePages, getPageBlocks, getPageTitle, getPageDate, isMeetingNote } from "./notion.js";
 import { blocksToMarkdown } from "./markdown.js";
 import { uploadFile, ensureFolderExists } from "./dropbox.js";
 
@@ -47,8 +47,9 @@ async function syncNotionToDropbox() {
       const title = getPageTitle(page);
       const date = getPageDate(page);
       const filename = sanitizeFilename(`${date} - ${title}`);
+      const meetingNote = isMeetingNote(page);
 
-      console.log(`\nProcessing: ${title}`);
+      console.log(`\nProcessing: ${title}${meetingNote ? " (meeting note)" : ""}`);
 
       // Fetch all blocks (content) for this page
       const blocks = await getPageBlocks(page.id);
@@ -61,7 +62,7 @@ async function syncNotionToDropbox() {
         ``,
         `---`,
         ``,
-        blocksToMarkdown(blocks),
+        blocksToMarkdown(blocks, 0, { isMeetingNote: meetingNote }),
       ].join("\n");
 
       // Upload to Dropbox

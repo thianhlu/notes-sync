@@ -85,3 +85,16 @@ export function getPageDate(page: PageObjectResponse): string {
   // Fall back to created time
   return page.created_time.split("T")[0];
 }
+
+export function isMeetingNote(page: PageObjectResponse): boolean {
+  // Check if Select property = "Notes"
+  const selectProp = Object.values(page.properties).find(
+    (prop) => prop.type === "select"
+  );
+
+  if (selectProp?.type === "select" && selectProp.select?.name === "Notes") {
+    return true;
+  }
+
+  return false;
+}

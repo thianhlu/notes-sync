@@ -1,10 +1,23 @@
 import type { BlockObjectResponse, RichTextItemResponse } from "@notionhq/client/build/src/api-endpoints";
 
-export function blocksToMarkdown(blocks: BlockObjectResponse[], indent = 0): string {
+interface MarkdownOptions {
+  isMeetingNote?: boolean;
+}
+
+export function blocksToMarkdown(blocks: BlockObjectResponse[], indent = 0, options: MarkdownOptions = {}): string {
   const lines: string[] = [];
-  const prefix = "  ".repeat(indent);
 
   for (const block of blocks) {
+    // For meeting notes, expand child_page content directly
+    if (options.isMeetingNote && block.type === "child_page") {
+      // Add section header for the meeting content
+      lines.push(`\n## ${block.child_page.title}\n`);
+      if ((block as any).children) {
+        lines.push(blocksToMarkdown((block as any).children, 0, options));
+      }
+      continue;
+    }
+
     const line = blockToMarkdown(block, indent);
     if (line !== null) {
       lines.push(line);
@@ -12,7 +25,7 @@ export function blocksToMarkdown(blocks: BlockObjectResponse[], indent = 0): str
 
     // Handle children
     if ((block as any).children) {
-      lines.push(blocksToMarkdown((block as any).children, indent + 1));
+      lines.push(blocksToMarkdown((block as any).children, indent + 1, options));
     }
   }
 
